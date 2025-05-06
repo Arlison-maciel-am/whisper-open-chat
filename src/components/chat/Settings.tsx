@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -139,21 +140,29 @@ const Settings: React.FC<SettingsProps> = ({
       if (apiKeyError) throw apiKeyError;
       
       // Save enabled models to database
-      // First, delete all existing models
-      await supabase.from('available_models').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // First, delete all existing models for this user
+      await supabase
+        .from('available_models')
+        .delete()
+        .eq('enabled', true);
       
       // Then insert the enabled ones
-      for (const model of allModels) {
-        const { error: modelError } = await supabase
-          .from('available_models')
-          .insert({
-            model_id: model.id,
-            name: model.name,
-            max_tokens: model.maxTokens,
-            enabled: enabledModels.includes(model.id)
-          });
-        
-        if (modelError) throw modelError;
+      if (allModels.length > 0) {
+        for (const model of allModels) {
+          const { error: modelError } = await supabase
+            .from('available_models')
+            .insert({
+              model_id: model.id,
+              name: model.name,
+              max_tokens: model.maxTokens,
+              enabled: enabledModels.includes(model.id)
+            });
+          
+          if (modelError) {
+            console.error("Error inserting model:", modelError);
+            throw modelError;
+          }
+        }
       }
       
       onSaveSettings({
