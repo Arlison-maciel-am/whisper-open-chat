@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import ChatHeader from './ChatHeader';
 import ChatMessage from './ChatMessage';
@@ -106,7 +105,6 @@ const ChatComponent: React.FC = () => {
     if (!user) return;
     
     try {
-      // Check if there are any existing chats
       const { data: chats, error: chatsError } = await supabase
         .from('chats')
         .select('*')
@@ -131,7 +129,6 @@ const ChatComponent: React.FC = () => {
 
   const loadChat = async (chatId: string) => {
     try {
-      // Get chat data
       const { data: chatData, error: chatError } = await supabase
         .from('chats')
         .select('*')
@@ -140,7 +137,6 @@ const ChatComponent: React.FC = () => {
       
       if (chatError) throw chatError;
       
-      // Get messages for this chat
       const { data: messageData, error: messageError } = await supabase
         .from('messages')
         .select('*')
@@ -149,7 +145,6 @@ const ChatComponent: React.FC = () => {
       
       if (messageError) throw messageError;
       
-      // Format messages
       const messages: Message[] = await Promise.all(messageData.map(async (msg) => {
         let attachments: Attachment[] = [];
         
@@ -172,7 +167,7 @@ const ChatComponent: React.FC = () => {
         
         return {
           id: msg.id,
-          role: msg.role,
+          role: msg.role as 'user' | 'assistant' | 'system',
           content: msg.content,
           timestamp: new Date(msg.timestamp).getTime(),
           attachments: attachments.length > 0 ? attachments : undefined
@@ -202,7 +197,6 @@ const ChatComponent: React.FC = () => {
     const model = settings.models.length > 0 ? settings.models[0].id : DEFAULT_MODEL;
     
     try {
-      // Create a new chat in the database
       const { data, error } = await supabase
         .from('chats')
         .insert({
@@ -229,7 +223,6 @@ const ChatComponent: React.FC = () => {
       console.error('Error creating chat:', error);
       toast.error('Failed to create new chat');
       
-      // Fallback to create chat locally
       const newChat = {
         id: uuidv4(),
         title: 'New Chat',
@@ -269,6 +262,7 @@ const ChatComponent: React.FC = () => {
     };
 
     // Save user message to database
+    let userMessageDbId: string;
     try {
       const { data: msgData, error: msgError } = await supabase
         .from('messages')
@@ -282,6 +276,8 @@ const ChatComponent: React.FC = () => {
         .single();
       
       if (msgError) throw msgError;
+      
+      userMessageDbId = msgData.id;
       
       // If there are attachments, save them
       if (attachments.length > 0) {
@@ -359,6 +355,9 @@ const ChatComponent: React.FC = () => {
           saveAssistantMessage("I'm sorry, I encountered an error while generating a response.");
         },
         async () => {
+          // Response is complete, now save the full message to Supabase
+          await saveAssistantMessage(currentMessage);
+          
           // Update assistant message with full response
           const finalMessages = [...updatedChat.messages];
           const assistantMessageIndex = finalMessages.length - 1;
@@ -373,7 +372,6 @@ const ChatComponent: React.FC = () => {
           };
           
           setChat(finalChat);
-          await saveAssistantMessage(currentMessage);
           
           // Update chat title if this is the first message
           if (chat.messages.length === 0) {
@@ -394,28 +392,37 @@ const ChatComponent: React.FC = () => {
     if (!chat || !user) return;
     
     try {
-      await supabase
+      const { data, error } = await supabase
         .from('messages')
         .insert({
           chat_id: chat.id,
           role: 'assistant',
           content: content
-        });
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error saving assistant message:', error);
+        throw error;
+      }
       
       // Update chat's updated_at timestamp
       await supabase
         .from('chats')
         .update({ updated_at: new Date().toISOString() })
         .eq('id', chat.id);
+        
+      console.log('Assistant message saved successfully:', data);
     } catch (error) {
       console.error('Error saving assistant message:', error);
+      toast.error('Failed to save response to database');
     }
   };
 
   const updateChatTitle = async (content: string) => {
     if (!chat || !user) return;
     
-    // Generate a title from the first user message
     const title = content.length > 30 
       ? `${content.substring(0, 30)}...` 
       : content;
