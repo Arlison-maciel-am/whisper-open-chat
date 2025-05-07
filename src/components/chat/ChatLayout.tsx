@@ -15,6 +15,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface ChatLayoutProps {
   chat: Chat | null;
+  setChat: React.Dispatch<React.SetStateAction<Chat | null>>;
   currentMessage: string;
   setCurrentMessage: React.Dispatch<React.SetStateAction<string>>;
   isGenerating: boolean;

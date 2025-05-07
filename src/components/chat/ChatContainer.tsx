@@ -294,6 +294,7 @@ const ChatContainer: React.FC = () => {
     <SidebarProvider>
       <ChatLayout
         chat={chat}
+        setChat={setChat}
         currentMessage={currentMessage}
         setCurrentMessage={setCurrentMessage}
         isGenerating={isGenerating}
