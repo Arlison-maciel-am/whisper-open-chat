@@ -1,9 +1,9 @@
 
 import React from "react";
-import Chat from "@/components/chat/Chat";
+import ChatContainer from "@/components/chat/ChatContainer";
 
 const Index = () => {
-  return <Chat />;
+  return <ChatContainer />;
 };
 
 export default Index;
