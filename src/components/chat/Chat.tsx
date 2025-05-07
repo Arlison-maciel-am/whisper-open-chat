@@ -244,6 +244,50 @@ const ChatComponent: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const saveAssistantMessage = async (content: string) => {
+    if (!chat || !user) return;
+    
+    try {
+      console.log('Saving assistant message to database:', {
+        chat_id: chat.id,
+        role: 'assistant',
+        content: content.substring(0, 20) + '...' // Log just the beginning for brevity
+      });
+      
+      const { data, error } = await supabase
+        .from('messages')
+        .insert({
+          chat_id: chat.id,
+          role: 'assistant',
+          content: content,
+          timestamp: new Date().toISOString() // Add explicit timestamp
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error saving assistant message:', error);
+        toast.error(`Failed to save response: ${error.message}`);
+        throw error;
+      }
+      
+      // Update chat's updated_at timestamp
+      const { error: updateError } = await supabase
+        .from('chats')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', chat.id);
+        
+      if (updateError) {
+        console.error('Error updating chat timestamp:', updateError);
+      } else {
+        console.log('Assistant message saved successfully:', data.id);
+      }
+    } catch (error) {
+      console.error('Error saving assistant message:', error);
+      toast.error('Failed to save response to database');
+    }
+  };
+
   const handleSendMessage = async (content: string, attachments: Attachment[]) => {
     if (!chat || !user) return;
     if (!settings.apiKey) {
@@ -270,7 +314,8 @@ const ChatComponent: React.FC = () => {
           chat_id: chat.id,
           role: 'user',
           content,
-          has_attachments: attachments.length > 0
+          has_attachments: attachments.length > 0,
+          timestamp: new Date().toISOString()  // Add explicit timestamp
         })
         .select()
         .single();
@@ -355,68 +400,43 @@ const ChatComponent: React.FC = () => {
           saveAssistantMessage("I'm sorry, I encountered an error while generating a response.");
         },
         async () => {
-          // Response is complete, now save the full message to Supabase
-          await saveAssistantMessage(currentMessage);
+          console.log("Stream complete, saving assistant message to database");
           
-          // Update assistant message with full response
-          const finalMessages = [...updatedChat.messages];
-          const assistantMessageIndex = finalMessages.length - 1;
-          finalMessages[assistantMessageIndex] = {
-            ...finalMessages[assistantMessageIndex],
-            content: currentMessage
-          };
-          
-          const finalChat = {
-            ...updatedChat,
-            messages: finalMessages
-          };
-          
-          setChat(finalChat);
-          
-          // Update chat title if this is the first message
-          if (chat.messages.length === 0) {
-            updateChatTitle(content);
+          // Save the full message to Supabase FIRST, before updating UI
+          try {
+            await saveAssistantMessage(currentMessage);
+            console.log("Assistant message saved successfully");
+            
+            // Only after successful save, update the UI
+            const finalMessages = [...updatedChat.messages];
+            const assistantMessageIndex = finalMessages.length - 1;
+            finalMessages[assistantMessageIndex] = {
+              ...finalMessages[assistantMessageIndex],
+              content: currentMessage
+            };
+            
+            const finalChat = {
+              ...updatedChat,
+              messages: finalMessages
+            };
+            
+            setChat(finalChat);
+            
+            // Update chat title if this is the first message
+            if (chat.messages.length === 0) {
+              updateChatTitle(content);
+            }
+          } catch (error) {
+            console.error("Error saving assistant message:", error);
+          } finally {
+            setCurrentMessage('');
+            setIsGenerating(false);
           }
-          
-          setCurrentMessage('');
-          setIsGenerating(false);
         }
       );
     } catch (error) {
       console.error("Error in handleSendMessage:", error);
       setIsGenerating(false);
-    }
-  };
-
-  const saveAssistantMessage = async (content: string) => {
-    if (!chat || !user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          chat_id: chat.id,
-          role: 'assistant',
-          content: content
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error saving assistant message:', error);
-        throw error;
-      }
-      
-      // Update chat's updated_at timestamp
-      await supabase
-        .from('chats')
-        .update({ updated_at: new Date().toISOString() })
-        .eq('id', chat.id);
-        
-      console.log('Assistant message saved successfully:', data);
-    } catch (error) {
-      console.error('Error saving assistant message:', error);
-      toast.error('Failed to save response to database');
     }
   };
 
