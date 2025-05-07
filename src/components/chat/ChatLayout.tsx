@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { Chat, Message, Attachment } from '@/types/chat';
 import { User } from '@supabase/supabase-js';
@@ -289,76 +290,91 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
   // If chat is not initialized yet or user is loading, show loading
   if (loading || !user) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl font-bold mb-2">Loading Chat</div>
-          <div>Initializing...</div>
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="text-center animate-pulse">
+          <div className="text-2xl font-bold mb-2 text-foreground">Loading Chat</div>
+          <div className="text-muted-foreground">Initializing...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex w-full h-screen">
+    <div className="flex w-full h-screen bg-background">
       <ChatSidebar 
         onNewChat={onNewChat} 
         onSelectChat={onSelectChat} 
         currentChatId={chat?.id || null}
       />
       
-      <div className="flex flex-col w-full h-screen">
-        <div className="flex items-center bg-background border-b p-2">
-          <SidebarTrigger />
-          {chat && (
-            <ChatHeader
-              selectedModel={chat.model}
-              models={settings.models}
-              onModelChange={onModelChange}
-              onOpenSettings={() => setSettingsOpen(true)}
-              isApiKeySet={!!settings.apiKey}
-            />
-          )}
+      <div className="flex flex-col w-full h-screen overflow-hidden">
+        <div className="flex-shrink-0">
+          <div className="flex items-center bg-background">
+            <SidebarTrigger className="ml-2 md:ml-4 text-muted-foreground hover:text-foreground" />
+            {chat && (
+              <ChatHeader
+                selectedModel={chat.model}
+                models={settings.models}
+                onModelChange={onModelChange}
+                onOpenSettings={() => setSettingsOpen(true)}
+                isApiKeySet={!!settings.apiKey}
+              />
+            )}
+          </div>
         </div>
         
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto chat-container">
           {chat && (
             chat.messages.length === 0 ? (
-              <div className="h-full flex items-center justify-center">
-                <div className="text-center max-w-md px-4">
-                  <h2 className="text-2xl font-bold mb-2">Welcome to Whisper Open Chat</h2>
-                  <p className="text-muted-foreground mb-6">
+              <div className="h-full flex items-center justify-center p-4">
+                <div className="max-w-md text-center px-4 animate-fade-in">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
+                    <div className="text-primary text-xl font-semibold">AI</div>
+                  </div>
+                  <h2 className="text-2xl font-bold mb-3 text-foreground">Welcome to Whisper Chat</h2>
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
                     Start a conversation with AI using OpenRouter. 
                     You can ask questions, get creative writing, problem-solving help, and more.
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Powered by OpenRouter and similar to ChatGPT
+                  <p className="text-xs text-muted-foreground border-t border-border/40 pt-4 mt-4">
+                    Powered by OpenRouter
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="pb-20">
-                {chat.messages.map((message) => (
+              <div className="pb-24">
+                {chat.messages.map((message, index) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
                 
                 {/* Show streaming message */}
                 {isGenerating && currentMessage && (
-                  <div className="py-5 bg-chat-assistant">
-                    <div className="container max-w-4xl mx-auto flex gap-4">
+                  <div className="py-6 chat-message-assistant animate-fade-in">
+                    <div className="container max-w-6xl mx-auto flex gap-4 px-4 md:px-6">
                       <div className="flex-shrink-0 pt-1">
                         <div className="w-8 h-8 rounded-full bg-chat-bubble flex items-center justify-center">
-                          <div className="text-white font-semibold">AI</div>
+                          <div className="text-white font-medium text-sm">AI</div>
                         </div>
                       </div>
                       
-                      <div className="flex-1 prose prose-sm max-w-none">
-                        <div className="font-semibold mb-1">Assistant</div>
-                        <div 
-                          className="markdown" 
-                          dangerouslySetInnerHTML={{ 
-                            __html: currentMessage.replace(/\n/g, '<br>') 
-                          }} 
-                        />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-center mb-1.5">
+                          <div className="font-semibold text-sm">
+                            Assistant
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            typing<span className="typing-dots"></span>
+                          </div>
+                        </div>
+                        
+                        <div className="prose prose-sm max-w-none prose-p:text-foreground/90 prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold">
+                          <div 
+                            className="markdown" 
+                            dangerouslySetInnerHTML={{ 
+                              __html: currentMessage.replace(/\n/g, '<br>') 
+                            }} 
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -370,7 +386,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
           )}
         </div>
         
-        <div className="sticky bottom-0">
+        <div className="flex-shrink-0 w-full">
           {chat && (
             <ChatInput 
               onSendMessage={handleSendMessage}

@@ -64,8 +64,8 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				chat: {
-					user: '#F0F4F9',
-					assistant: '#FFFFFF',
+					user: 'rgba(74, 47, 120, 0.1)',
+					assistant: 'rgba(40, 44, 52, 0.6)',
 					bubble: '#7E69AB'
 				}
 			},
@@ -98,14 +98,28 @@ export default {
 				typing: {
 					'0%': { width: '0' },
 					'100%': { width: '100%' }
-				}
+				},
+				'fade-in': {
+					'0%': { opacity: '0' },
+					'100%': { opacity: '1' }
+				},
+				'slide-up': {
+					'0%': { transform: 'translateY(10px)', opacity: '0' },
+					'100%': { transform: 'translateY(0)', opacity: '1' }
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pulse-slow': 'pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-				typing: 'typing 1s steps(40, end)'
-			}
+				typing: 'typing 1s steps(40, end)',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'slide-up': 'slide-up 0.3s ease-out'
+			},
+			boxShadow: {
+				'glow': '0 0 20px rgba(124, 58, 237, 0.2)',
+				'inner-glow': 'inset 0 0 20px rgba(124, 58, 237, 0.1)'
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

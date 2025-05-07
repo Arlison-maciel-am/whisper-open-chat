@@ -5,83 +5,48 @@
 
 @layer base {
   :root {
-    --background: 240 10% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 225 6% 13%;
+    --foreground: 220 13% 91%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 224 6% 16%;
+    --card-foreground: 220 13% 91%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 224 6% 16%;
+    --popover-foreground: 220 13% 91%;
 
     --primary: 260 40% 55%;
-    --primary-foreground: 0 0% 98%;
+    --primary-foreground: 220 13% 91%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 225 6% 20%;
+    --secondary-foreground: 220 13% 91%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 225 6% 18%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 224 6% 22%;
+    --accent-foreground: 220 13% 91%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
+    --border: 225 6% 24%;
+    --input: 225 6% 24%;
     --ring: 260 40% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-background: 225 7% 11%;
+    --sidebar-foreground: 220 13% 91%;
     --sidebar-primary: 260 40% 55%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 224 6% 16%;
+    --sidebar-accent-foreground: 220 13% 91%;
+    --sidebar-border: 225 6% 20%;
+    --sidebar-ring: 260 40% 55%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 260 40% 65%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 260 50% 65%; 
-    
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 260 40% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
@@ -109,11 +74,11 @@
 }
 
 .markdown pre {
-  @apply bg-secondary p-4 rounded-md my-2 overflow-x-auto;
+  @apply bg-secondary p-4 rounded-lg my-3 overflow-x-auto;
 }
 
 .markdown code {
-  @apply bg-secondary px-1 py-0.5 rounded;
+  @apply bg-secondary px-1.5 py-0.5 rounded-md text-sm;
 }
 
 .markdown h1 {
@@ -129,17 +94,52 @@
 }
 
 .markdown p {
-  @apply my-2;
+  @apply my-3;
 }
 
 .markdown ul, .markdown ol {
-  @apply my-2 ml-6;
+  @apply my-3 ml-6;
 }
 
 .markdown li {
-  @apply list-disc;
+  @apply mb-1 list-disc;
 }
 
 .markdown blockquote {
-  @apply border-l-4 border-muted-foreground pl-4 italic;
+  @apply border-l-4 border-primary/50 pl-4 italic my-3 text-muted-foreground;
+}
+
+.glass-effect {
+  @apply backdrop-blur-md bg-background/50 border border-border/50;
+}
+
+.chat-container {
+  background-image: radial-gradient(circle at center, rgba(74, 47, 120, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
+}
+
+.chat-message-user {
+  background: linear-gradient(90deg, rgba(74, 47, 120, 0.1) 0%, rgba(74, 47, 120, 0.05) 100%);
+}
+
+.chat-message-assistant {
+  background: linear-gradient(90deg, rgba(40, 44, 52, 0.6) 0%, rgba(40, 44, 52, 0.4) 100%);
+}
+
+.gradient-border {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, transparent 50%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
