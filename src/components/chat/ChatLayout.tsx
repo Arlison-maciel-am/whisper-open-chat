@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Chat, Message, Attachment } from '@/types/chat';
 import { User } from '@supabase/supabase-js';
@@ -37,6 +36,7 @@ interface ChatLayoutProps {
 
 const ChatLayout: React.FC<ChatLayoutProps> = ({
   chat,
+  setChat,
   currentMessage,
   setCurrentMessage,
   isGenerating,
