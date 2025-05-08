@@ -43,6 +43,8 @@
     --sidebar-accent-foreground: 220 13% 91%;
     --sidebar-border: 225 6% 20%;
     --sidebar-ring: 260 40% 55%;
+    
+    --chat-bubble: 261 40% 40%;
   }
 
   body {
@@ -142,4 +144,8 @@
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+}
+
+.shadow-glow {
+  box-shadow: 0 0 15px rgba(var(--primary), 0.3);
 }
