@@ -299,6 +299,15 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
     );
   }
 
+  // Find the current model name
+  const getCurrentModelName = () => {
+    if (!chat) return "Assistant";
+    const currentModel = settings.models.find(model => model.id === chat.model);
+    return currentModel?.name || "Assistant";
+  };
+
+  const modelName = getCurrentModelName();
+
   return (
     <div className="flex w-full h-screen bg-background">
       <ChatSidebar 
@@ -344,36 +353,42 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
             ) : (
               <div className="pb-24">
                 {chat.messages.map((message, index) => (
-                  <ChatMessage key={message.id} message={message} />
+                  <ChatMessage 
+                    key={message.id} 
+                    message={message} 
+                    modelName={modelName}
+                  />
                 ))}
                 
                 {/* Show streaming message */}
                 {isGenerating && currentMessage && (
                   <div className="py-6 chat-message-assistant animate-fade-in">
-                    <div className="container max-w-6xl mx-auto flex gap-4 px-4 md:px-6">
-                      <div className="flex-shrink-0 pt-1">
-                        <div className="w-8 h-8 rounded-full bg-chat-bubble flex items-center justify-center">
-                          <div className="text-white font-medium text-sm">AI</div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center mb-1.5">
-                          <div className="font-semibold text-sm">
-                            Assistant
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            typing<span className="typing-dots"></span>
+                    <div className="container max-w-6xl mx-auto px-4 md:px-6">
+                      <div className="flex gap-4">
+                        <div className="flex-shrink-0 pt-1">
+                          <div className="w-8 h-8 rounded-full bg-chat-bubble flex items-center justify-center">
+                            <div className="text-white font-medium text-sm">AI</div>
                           </div>
                         </div>
                         
-                        <div className="prose prose-sm max-w-none prose-p:text-foreground/90 prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold">
-                          <div 
-                            className="markdown" 
-                            dangerouslySetInnerHTML={{ 
-                              __html: currentMessage.replace(/\n/g, '<br>') 
-                            }} 
-                          />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-center mb-1.5">
+                            <div className="font-semibold text-sm">
+                              {modelName}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              typing<span className="typing-dots"></span>
+                            </div>
+                          </div>
+                          
+                          <div className="prose prose-sm max-w-none prose-p:text-foreground/90 prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold">
+                            <div 
+                              className="markdown" 
+                              dangerouslySetInnerHTML={{ 
+                                __html: currentMessage.replace(/\n/g, '<br>') 
+                              }} 
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>

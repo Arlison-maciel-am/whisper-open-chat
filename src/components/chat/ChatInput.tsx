@@ -72,7 +72,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
   };
 
   return (
-    <div className="w-full border-t border-border/40 bg-background/95 backdrop-blur-md p-4">
+    <div className="w-full border-t border-border/40 bg-background/95 backdrop-blur-md p-4 z-10">
       <div className="container max-w-6xl mx-auto">
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
