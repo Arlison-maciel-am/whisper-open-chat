@@ -93,27 +93,23 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
           </div>
         )}
         
-        <div className={cn(
-          "gradient-border flex gap-2 items-end rounded-lg bg-secondary/40",
-          !disabled && "hover:shadow-glow transition-shadow duration-300"
-        )}>
+        <div className="gradient-border flex gap-2 items-end rounded-lg bg-secondary/40 relative">
           <Textarea
             ref={textareaRef}
             value={message}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="min-h-[56px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-3 text-sm scrollbar-none"
+            className="min-h-[56px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-3 text-sm scrollbar-none z-10"
           />
           
-          <div className="flex-shrink-0 flex gap-1.5 p-2">
+          <div className="flex-shrink-0 flex gap-1.5 p-2 z-10">
             <Button
               variant="outline"
               size="icon"
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              disabled={disabled}
-              className="h-9 w-9 rounded-full bg-accent/80 border-border/60 hover:bg-primary/20"
+              className="h-9 w-9 rounded-full bg-accent/80 border-border/60 hover:bg-primary/20 z-10"
             >
               <Paperclip className="h-4 w-4" />
               <span className="sr-only">Attach file</span>
@@ -123,8 +119,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
               type="button"
               size="icon"
               onClick={handleSendMessage}
-              disabled={disabled || (message.trim() === '' && attachments.length === 0)}
-              className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90"
+              disabled={message.trim() === '' && attachments.length === 0}
+              className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 z-10"
             >
               <Send className="h-4 w-4" />
               <span className="sr-only">Send message</span>
