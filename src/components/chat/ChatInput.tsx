@@ -104,7 +104,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             className="min-h-[56px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-3 text-sm scrollbar-none"
-            disabled={disabled}
           />
           
           <div className="flex-shrink-0 flex gap-1.5 p-2">

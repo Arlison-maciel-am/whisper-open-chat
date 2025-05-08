@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Chat, Message, Attachment } from '@/types/chat';
 import { User } from '@supabase/supabase-js';
@@ -404,8 +403,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
         <div className="flex-shrink-0 w-full">
           {chat && (
             <ChatInput 
-              onSendMessage={handleSendMessage}
-              disabled={isGenerating} 
+              onSendMessage={handleSendMessage} 
             />
           )}
         </div>
