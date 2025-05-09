@@ -44,6 +44,13 @@ const ChatContainer: React.FC = () => {
     }
   }, [user, loading, navigate]);
 
+  // Persist current chat ID in sessionStorage to maintain it across tab switches
+  useEffect(() => {
+    if (chat?.id) {
+      sessionStorage.setItem('current-chat-id', chat.id);
+    }
+  }, [chat?.id]);
+
   const loadApiSettings = async () => {
     if (!user) return;
     
@@ -94,6 +101,28 @@ const ChatContainer: React.FC = () => {
 
   const loadOrCreateChat = async () => {
     if (!user) return;
+    
+    // Check if we have a stored chat ID from the current session
+    const storedChatId = sessionStorage.getItem('current-chat-id');
+    
+    if (storedChatId) {
+      try {
+        // Attempt to load the stored chat first
+        const { data: chatData, error: chatError } = await supabase
+          .from('chats')
+          .select('*')
+          .eq('id', storedChatId)
+          .maybeSingle();
+        
+        if (chatData) {
+          // If the stored chat exists, load it
+          await loadChat(storedChatId);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking stored chat:', error);
+      }
+    }
     
     try {
       const { data: chats, error: chatsError } = await supabase
@@ -191,6 +220,9 @@ const ChatContainer: React.FC = () => {
       
       console.log('Processed chat object:', chat);
       setChat(chat);
+      
+      // Store the current chat ID in session storage
+      sessionStorage.setItem('current-chat-id', chat.id);
     } catch (error) {
       console.error('Error loading chat:', error);
       toast.error('Failed to load chat messages');
@@ -226,6 +258,9 @@ const ChatContainer: React.FC = () => {
       };
       
       setChat(newChat);
+      
+      // Store the current chat ID in session storage
+      sessionStorage.setItem('current-chat-id', newChat.id);
     } catch (error) {
       console.error('Error creating chat:', error);
       toast.error('Failed to create new chat');
@@ -239,6 +274,7 @@ const ChatContainer: React.FC = () => {
         updatedAt: Date.now()
       };
       setChat(newChat);
+      sessionStorage.setItem('current-chat-id', newChat.id);
     }
   };
 

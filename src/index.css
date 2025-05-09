@@ -62,6 +62,16 @@
   }
 }
 
+/* Make sure the chat input is always usable */
+.chat-input-wrapper {
+  @apply relative z-10;
+}
+
+/* Enhanced styling for sidebar menu items */
+[data-sidebar="menu-button"][data-active="true"] {
+  @apply bg-primary/20 border-l-4 border-primary pl-[calc(0.5rem-2px)];
+}
+
 .typing-dots::after {
   content: '...';
   animation: dots 1.5s infinite;

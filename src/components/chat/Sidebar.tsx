@@ -123,7 +123,7 @@ export function ChatSidebar({ onNewChat, onSelectChat, currentChatId }: ChatSide
               chats.map((chat) => (
                 <SidebarMenuItem key={chat.id} className="relative group">
                   <SidebarMenuButton
-                    className="justify-between w-full"
+                    className="justify-between w-full py-3"
                     isActive={currentChatId === chat.id}
                     onClick={() => onSelectChat(chat)}
                   >
