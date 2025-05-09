@@ -119,12 +119,22 @@
   background-image: radial-gradient(circle at center, rgba(74, 47, 120, 0.03) 0%, rgba(0, 0, 0, 0) 70%);
 }
 
+/* User message styles */
 .chat-message-user {
-  background: linear-gradient(90deg, rgba(74, 47, 120, 0.1) 0%, rgba(74, 47, 120, 0.05) 100%);
+  /* Removed background as it's now applied to the card */
 }
 
+/* Assistant message styles */
 .chat-message-assistant {
-  background: linear-gradient(90deg, rgba(40, 44, 52, 0.6) 0%, rgba(40, 44, 52, 0.4) 100%);
+  /* Removed background as it's no longer needed */
+}
+
+/* User message card styles */
+.user-message-card {
+  background: linear-gradient(90deg, rgba(74, 47, 120, 0.1) 0%, rgba(74, 47, 120, 0.05) 100%);
+  border: 1px solid rgba(74, 47, 120, 0.2);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .gradient-border {

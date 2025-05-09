@@ -361,31 +361,25 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
                 
                 {/* Show streaming message */}
                 {isGenerating && currentMessage && (
-                  <div className="py-6 chat-message-assistant animate-fade-in">
+                  <div className="py-4 animate-fade-in">
                     <div className="container max-w-6xl mx-auto px-4 md:px-6">
-                      <div className="flex gap-4">
-                        <div className="flex-shrink-0 pt-1">
-                          <div className="w-8 h-8 rounded-full bg-chat-bubble flex items-center justify-center">
-                            <div className="text-white font-medium text-sm">AI</div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex justify-between items-center mb-1.5">
-                            <div className="font-semibold text-sm">
-                              {modelName}
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] md:max-w-[75%]">
+                          <div className="flex items-center mb-1">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center bg-chat-bubble text-white mr-2">
+                              <div className="font-medium text-xs">AI</div>
                             </div>
+                            <div className="font-semibold text-sm mr-2">{modelName}</div>
                             <div className="text-xs text-muted-foreground">
                               typing<span className="typing-dots"></span>
                             </div>
                           </div>
-                          
-                          <div className="prose prose-sm max-w-none prose-p:text-foreground/90 prose-p:leading-relaxed prose-headings:text-foreground prose-headings:font-semibold">
-                            <div 
-                              className="markdown" 
-                              dangerouslySetInnerHTML={{ 
-                                __html: currentMessage.replace(/\n/g, '<br>') 
-                              }} 
+                          <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-p:text-foreground/90 prose-p:leading-relaxed prose-code:text-primary-foreground/90 prose-code:bg-primary/10 prose-code:rounded prose-strong:text-foreground prose-strong:font-semibold prose-pre:bg-muted prose-pre:text-muted-foreground">
+                            <div
+                              className="markdown"
+                              dangerouslySetInnerHTML={{
+                                __html: currentMessage.replace(/\n/g, '<br>')
+                              }}
                             />
                           </div>
                         </div>

@@ -106,7 +106,7 @@ export function ChatSidebar({ onNewChat, onSelectChat, currentChatId }: ChatSide
       
       <SidebarContent>
         <ScrollArea className="h-[calc(100vh-12rem)]">
-          <SidebarMenu>
+          <SidebarMenu className="space-y-2 px-2">
             {isLoading ? (
               Array(3).fill(0).map((_, i) => (
                 <SidebarMenuItem key={i}>
@@ -121,21 +121,22 @@ export function ChatSidebar({ onNewChat, onSelectChat, currentChatId }: ChatSide
               </div>
             ) : (
               chats.map((chat) => (
-                <SidebarMenuItem key={chat.id}>
-                  <SidebarMenuButton 
+                <SidebarMenuItem key={chat.id} className="relative group">
+                  <SidebarMenuButton
                     className="justify-between w-full"
                     isActive={currentChatId === chat.id}
                     onClick={() => onSelectChat(chat)}
                   >
-                    <div className="flex flex-col items-start">
-                      <span className="truncate max-w-[180px]">{chat.title}</span>
-                      <span className="text-xs text-muted-foreground">{formatDate(chat.updatedAt)}</span>
+                    <div className="flex flex-col items-start w-full pr-8 px-2 py-1">
+                      <span className="truncate w-full font-medium">{chat.title}</span>
+                      <span className="text-xs text-muted-foreground mt-1">{formatDate(chat.updatedAt)}</span>
                     </div>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       onClick={(e) => handleDeleteChat(chat.id, e)}
+                      aria-label="Delete chat"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
