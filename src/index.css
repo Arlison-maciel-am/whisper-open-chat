@@ -72,6 +72,11 @@
   @apply bg-primary/20 border-l-4 border-primary pl-[calc(0.5rem-2px)];
 }
 
+/* Adiciona margens para separação entre grupos no sidebar */
+[data-sidebar="menu"] + h3 {
+  @apply mt-3;
+}
+
 .typing-dots::after {
   content: '...';
   animation: dots 1.5s infinite;
