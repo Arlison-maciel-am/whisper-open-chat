@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { PlusCircle, MessageSquare, Trash2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -158,8 +157,8 @@ export function ChatSidebar({ onNewChat, onSelectChat, currentChatId }: ChatSide
           onClick={() => onSelectChat(chat)}
         >
           <div className="flex flex-col items-start w-full pr-8 px-2 py-1">
-            <span className="truncate w-full font-medium">{chat.title}</span>
-            <span className="text-xs text-muted-foreground mt-1">{formatDate(chat.updatedAt)}</span>
+            <span className="truncate w-full font-medium pt-1">{chat.title}</span>
+            <span className="text-xs text-muted-foreground mt-1 pb-1">{formatDate(chat.updatedAt)}</span>
           </div>
           <Button
             variant="ghost"
