@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Building, Group, Model, Users } from 'lucide-react';
+import { Building, Group, Settings as SettingsIcon, Users } from 'lucide-react';
 import CompanySettings from './settings/CompanySettings';
 import ModelsSettings from './settings/ModelsSettings';
 import GroupsSettings from './settings/GroupsSettings';
@@ -45,7 +45,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
                 className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
                 onClick={() => setActiveTab("models")}
               >
-                <Model className="h-4 w-4 mr-2" />
+                <SettingsIcon className="h-4 w-4 mr-2" />
                 Modelos
               </TabsTrigger>
               <TabsTrigger 

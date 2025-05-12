@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth';
 import { Model } from '@/types/chat';
 import { Plus, Trash, Edit, Save, X } from 'lucide-react';
+import { Json } from '@/integrations/supabase/types';
 
 interface Group {
   id: string;
@@ -88,7 +89,18 @@ export default function GroupsSettings() {
 
       if (error) throw error;
       
-      setGroups(data || []);
+      // Transform the data to match our Group interface
+      const transformedGroups = data.map(group => ({
+        ...group,
+        authorized_models: Array.isArray(group.authorized_models) 
+          ? group.authorized_models 
+          : [],
+        permissions: typeof group.permissions === 'object' 
+          ? group.permissions as Record<string, boolean>
+          : {}
+      }));
+      
+      setGroups(transformedGroups);
     } catch (error) {
       console.error("Error fetching groups:", error);
       toast.error("Erro ao buscar grupos");
@@ -164,7 +176,16 @@ export default function GroupsSettings() {
       if (error) throw error;
 
       if (data) {
-        setGroups([...groups, data[0]]);
+        // Transform the returned data to match our Group interface
+        const newGroup: Group = {
+          id: data[0].id,
+          name: data[0].name,
+          company_id: data[0].company_id,
+          authorized_models: [],
+          permissions: {}
+        };
+        
+        setGroups([...groups, newGroup]);
         setNewGroupName("");
         setIsCreating(false);
         toast.success("Grupo criado com sucesso");
