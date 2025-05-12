@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -282,7 +281,7 @@ export default function UsersSettings() {
                   <SelectValue placeholder="Selecione um grupo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Nenhum grupo</SelectItem>
+                  <SelectItem value="none">Nenhum grupo</SelectItem>
                   {groups.map(group => (
                     <SelectItem key={group.id} value={group.id}>
                       {group.name}
