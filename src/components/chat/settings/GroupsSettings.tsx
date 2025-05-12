@@ -90,10 +90,12 @@ export default function GroupsSettings() {
       if (error) throw error;
       
       // Transform the data to match our Group interface
-      const transformedGroups = data.map(group => ({
-        ...group,
+      const transformedGroups: Group[] = data.map(group => ({
+        id: group.id,
+        name: group.name,
+        company_id: group.company_id,
         authorized_models: Array.isArray(group.authorized_models) 
-          ? group.authorized_models 
+          ? group.authorized_models.map(item => String(item))
           : [],
         permissions: typeof group.permissions === 'object' 
           ? group.permissions as Record<string, boolean>

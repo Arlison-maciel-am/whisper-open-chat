@@ -30,70 +30,74 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
             <h2 className="text-lg font-semibold">Configurações</h2>
             <p className="text-sm text-muted-foreground">Gerencie as configurações do sistema</p>
           </div>
-          <div className="flex-1 overflow-auto p-2">
-            <TabsList className="flex flex-col w-full gap-1">
-              <TabsTrigger 
-                value="company"
-                className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
-                onClick={() => setActiveTab("company")}
-              >
-                <Building className="h-4 w-4 mr-2" />
-                Empresa
-              </TabsTrigger>
-              <TabsTrigger 
-                value="models"
-                className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
-                onClick={() => setActiveTab("models")}
-              >
-                <SettingsIcon className="h-4 w-4 mr-2" />
-                Modelos
-              </TabsTrigger>
-              <TabsTrigger 
-                value="groups"
-                className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
-                onClick={() => setActiveTab("groups")}
-              >
-                <Group className="h-4 w-4 mr-2" />
-                Grupos
-              </TabsTrigger>
-              <TabsTrigger 
-                value="users"
-                className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
-                onClick={() => setActiveTab("users")}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Usuários
-              </TabsTrigger>
-            </TabsList>
-          </div>
-          <div className="p-4 border-t">
-            <div className="flex flex-col space-y-1">
-              <Button variant="link" className="h-auto p-0 justify-start text-sm">
-                Suporte
-              </Button>
-              <Button variant="link" className="h-auto p-0 justify-start text-sm">
-                Feedback
-              </Button>
+          <Tabs value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="h-full flex flex-col">
+            <div className="flex-1 overflow-auto p-2">
+              <TabsList className="flex flex-col w-full gap-1">
+                <TabsTrigger 
+                  value="company"
+                  className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
+                >
+                  <Building className="h-4 w-4 mr-2" />
+                  Empresa
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="models"
+                  className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
+                >
+                  <SettingsIcon className="h-4 w-4 mr-2" />
+                  Modelos
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="groups"
+                  className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
+                >
+                  <Group className="h-4 w-4 mr-2" />
+                  Grupos
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="users"
+                  className="justify-start px-4 py-2 text-sm font-medium rounded-md text-left w-full"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Usuários
+                </TabsTrigger>
+              </TabsList>
             </div>
-          </div>
+            <div className="p-4 border-t">
+              <div className="flex flex-col space-y-1">
+                <Button variant="link" className="h-auto p-0 justify-start text-sm">
+                  Suporte
+                </Button>
+                <Button variant="link" className="h-auto p-0 justify-start text-sm">
+                  Feedback
+                </Button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-auto h-full hidden">
+              <TabsContent value="company" className="flex-1 p-6 m-0 flex flex-col">
+                <CompanySettings />
+              </TabsContent>
+              <TabsContent value="models" className="flex-1 p-6 m-0 flex flex-col">
+                <ModelsSettings />
+              </TabsContent>
+              <TabsContent value="groups" className="flex-1 p-6 m-0 flex flex-col">
+                <GroupsSettings />
+              </TabsContent>
+              <TabsContent value="users" className="flex-1 p-6 m-0 flex flex-col">
+                <UsersSettings />
+              </TabsContent>
+            </div>
+          </Tabs>
         </div>
 
-        {/* Content */}
+        {/* Content - Outside the sidebar's Tabs component */}
         <div className="flex-1 overflow-auto h-full">
-          <Tabs value={activeTab} className="h-full flex flex-col">
-            <TabsContent value="company" className="flex-1 p-6 m-0 flex flex-col">
-              <CompanySettings />
-            </TabsContent>
-            <TabsContent value="models" className="flex-1 p-6 m-0 flex flex-col">
-              <ModelsSettings />
-            </TabsContent>
-            <TabsContent value="groups" className="flex-1 p-6 m-0 flex flex-col">
-              <GroupsSettings />
-            </TabsContent>
-            <TabsContent value="users" className="flex-1 p-6 m-0 flex flex-col">
-              <UsersSettings />
-            </TabsContent>
-          </Tabs>
+          {activeTab === "company" && <CompanySettings />}
+          {activeTab === "models" && <ModelsSettings />}
+          {activeTab === "groups" && <GroupsSettings />}
+          {activeTab === "users" && <UsersSettings />}
         </div>
       </DialogContent>
     </Dialog>
