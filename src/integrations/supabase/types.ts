@@ -128,6 +128,100 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          cnpj: string | null
+          created_at: string | null
+          id: string
+          logo: string | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string | null
+          id?: string
+          logo?: string | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string | null
+          id?: string
+          logo?: string | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      group_users: {
+        Row: {
+          created_at: string | null
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_users_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          authorized_models: Json | null
+          company_id: string
+          created_at: string | null
+          id: string
+          name: string
+          permissions: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          authorized_models?: Json | null
+          company_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+          permissions?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          authorized_models?: Json | null
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          permissions?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           chat_id: string

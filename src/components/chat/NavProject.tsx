@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
+import SettingsDialog from './SettingsDialog';
 
 export function NavProject() {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b">
       <div className="flex items-center gap-2">
@@ -15,10 +18,12 @@ export function NavProject() {
           </div>
         </div>
       </div>
-      <Button variant="ghost" size="icon">
+      <Button variant="ghost" size="icon" onClick={() => setSettingsOpen(true)}>
         <Settings className="h-4 w-4" />
         <span className="sr-only">Settings</span>
       </Button>
+      
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }
