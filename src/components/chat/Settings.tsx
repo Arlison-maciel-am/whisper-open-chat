@@ -8,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import ModelsSettings from './settings/ModelsSettings';
 import { OpenRouterSettings } from '@/types/chat';
 
 interface SettingsProps {
@@ -35,7 +34,12 @@ const Settings: React.FC<SettingsProps> = ({
           </DialogDescription>
         </DialogHeader>
         
-        <ModelsSettings />
+        <div className="py-4">
+          <p className="text-sm text-muted-foreground">
+            As configurações de API agora são gerenciadas no menu principal de configurações.
+            Clique no ícone de configurações no cabeçalho para acessar todas as opções.
+          </p>
+        </div>
         
         <DialogFooter>
           <div className="text-xs text-muted-foreground">

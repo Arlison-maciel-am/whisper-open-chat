@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/select";
 import { Settings, Sparkles } from 'lucide-react';
 import { Model } from '@/types/chat';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth';
 
 interface ChatHeaderProps {
   selectedModel: string;
@@ -21,13 +23,81 @@ interface ChatHeaderProps {
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
   selectedModel,
-  models,
+  models: allModels,
   onModelChange,
   onOpenSettings,
   isApiKeySet
 }) => {
+  const { user } = useAuth();
+  const [filteredModels, setFilteredModels] = useState<Model[]>(allModels);
+  
+  // Fetch authorized models for the user's group
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchAuthorizedModels = async () => {
+      try {
+        // Get the user's group(s)
+        const { data: userGroups, error: groupError } = await supabase
+          .from('group_users')
+          .select('group_id')
+          .eq('user_id', user.id);
+        
+        if (groupError || !userGroups || userGroups.length === 0) {
+          // If no groups or error, use all available enabled models
+          setFilteredModels(allModels);
+          return;
+        }
+        
+        // Get the group details with authorized models
+        const groupIds = userGroups.map(g => g.group_id);
+        const { data: groups, error: authError } = await supabase
+          .from('groups')
+          .select('authorized_models')
+          .in('id', groupIds);
+        
+        if (authError || !groups || groups.length === 0) {
+          // If no data or error, use all available enabled models
+          setFilteredModels(allModels);
+          return;
+        }
+        
+        // Combine all authorized models from all groups
+        const authorizedModelIds: string[] = [];
+        groups.forEach(group => {
+          if (group.authorized_models && Array.isArray(group.authorized_models)) {
+            authorizedModelIds.push(...group.authorized_models.map(id => id.toString()));
+          }
+        });
+        
+        // Filter models based on authorized model IDs
+        if (authorizedModelIds.length > 0) {
+          const userModels = allModels.filter(model => 
+            authorizedModelIds.includes(model.id)
+          );
+          setFilteredModels(userModels.length > 0 ? userModels : allModels);
+        } else {
+          setFilteredModels(allModels);
+        }
+      } catch (error) {
+        console.error('Error fetching authorized models:', error);
+        setFilteredModels(allModels);
+      }
+    };
+    
+    fetchAuthorizedModels();
+  }, [user, allModels]);
+  
   // Find the current model to display its name
-  const currentModel = models.find(model => model.id === selectedModel);
+  const currentModel = filteredModels.find(model => model.id === selectedModel) || 
+                      (filteredModels.length > 0 ? filteredModels[0] : null);
+  
+  // If current selected model is not in filtered models, select the first available
+  useEffect(() => {
+    if (filteredModels.length > 0 && !filteredModels.some(m => m.id === selectedModel)) {
+      onModelChange(filteredModels[0].id);
+    }
+  }, [filteredModels, selectedModel, onModelChange]);
   
   return (
     <div className="w-full border-b border-border/40 bg-background/95 backdrop-blur-md sticky top-0 z-10">
@@ -43,18 +113,18 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
           <Select
             value={selectedModel}
             onValueChange={onModelChange}
-            disabled={!isApiKeySet || models.length === 0}
+            disabled={!isApiKeySet || filteredModels.length === 0}
           >
             <SelectTrigger className="w-[180px] h-8 text-xs bg-secondary/50 border-border/60">
               <div className="flex items-center gap-1.5 truncate">
                 <Sparkles className="h-3.5 w-3.5 text-primary/80" />
                 <SelectValue placeholder="Select model">
-                  {currentModel?.name || "Select model"}
+                  {currentModel?.name || "Selecionar modelo"}
                 </SelectValue>
               </div>
             </SelectTrigger>
             <SelectContent className="bg-popover/95 backdrop-blur-md border-border/60">
-              {models.map((model) => (
+              {filteredModels.map((model) => (
                 <SelectItem 
                   key={model.id} 
                   value={model.id}
@@ -63,6 +133,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
                   {model.name}
                 </SelectItem>
               ))}
+              {filteredModels.length === 0 && (
+                <div className="py-2 px-2 text-sm text-muted-foreground">
+                  Nenhum modelo disponível
+                </div>
+              )}
             </SelectContent>
           </Select>
         </div>

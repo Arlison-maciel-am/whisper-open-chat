@@ -11,7 +11,7 @@ import { useAuth } from '@/lib/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 
 export default function ModelsSettings() {
   const [apiKey, setApiKey] = useState('');
@@ -19,6 +19,7 @@ export default function ModelsSettings() {
   const [enabledModels, setEnabledModels] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingModels, setIsFetchingModels] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user } = useAuth();
 
   // Load settings on component mount
@@ -38,7 +39,9 @@ export default function ModelsSettings() {
           .eq('user_id', user.id)
           .maybeSingle();
 
-        if (apiKeyError) throw apiKeyError;
+        if (apiKeyError && apiKeyError.code !== 'PGRST116') {
+          throw apiKeyError;
+        }
         
         if (apiKeyData) {
           setApiKey(apiKeyData.api_key || '');
@@ -58,8 +61,7 @@ export default function ModelsSettings() {
     try {
       const { data, error } = await supabase
         .from('available_models')
-        .select('*')
-        .eq('enabled', true);
+        .select('*');
       
       if (error) throw error;
       
@@ -72,7 +74,8 @@ export default function ModelsSettings() {
         }));
         
         setAllModels(dbModels);
-        setEnabledModels(dbModels.map(m => m.id));
+        // Set only those that are marked as enabled in DB
+        setEnabledModels(data.filter(model => model.enabled).map(model => model.model_id));
       }
     } catch (error) {
       console.error('Error fetching enabled models:', error);
@@ -90,11 +93,12 @@ export default function ModelsSettings() {
     try {
       const models = await fetchModels(apiKey);
       setAllModels(models);
-      setEnabledModels(models.map(m => m.id));
-      toast.success("Models fetched successfully");
+      // Initialize all models as disabled (not selected)
+      setEnabledModels([]);
+      toast.success("Modelos obtidos com sucesso");
     } catch (error) {
       console.error("Failed to fetch models:", error);
-      toast.error("Invalid API key or connection error");
+      toast.error("API key inválida ou erro de conexão");
     } finally {
       setIsFetchingModels(false);
     }
@@ -102,21 +106,18 @@ export default function ModelsSettings() {
 
   const handleSave = async () => {
     if (!apiKey.trim()) {
-      toast.error("API key is required");
+      toast.error("API key é obrigatória");
       return;
     }
 
     if (!user) {
-      toast.error("You must be logged in to save settings");
+      toast.error("Você precisa estar logado para salvar configurações");
       return;
     }
 
     setIsLoading(true);
     
     try {
-      // Get only the enabled models
-      const selectedModels = allModels.filter(model => enabledModels.includes(model.id));
-      
       // Save API key to database
       const { error: apiKeyError } = await supabase
         .from('api_settings')
@@ -130,14 +131,13 @@ export default function ModelsSettings() {
       
       if (apiKeyError) throw apiKeyError;
       
-      // Save enabled models to database
-      // First, delete all existing models for this user
+      // Delete all existing models
       await supabase
         .from('available_models')
         .delete()
-        .eq('enabled', true);
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
       
-      // Then insert the enabled ones
+      // Then insert all models with their enabled status
       if (allModels.length > 0) {
         for (const model of allModels) {
           const { error: modelError } = await supabase
@@ -156,10 +156,10 @@ export default function ModelsSettings() {
         }
       }
       
-      toast.success("Settings saved successfully");
+      toast.success("Configurações salvas com sucesso");
     } catch (error) {
       console.error("Failed to save settings:", error);
-      toast.error("Failed to save settings");
+      toast.error("Falha ao salvar configurações");
     } finally {
       setIsLoading(false);
     }
@@ -181,10 +181,16 @@ export default function ModelsSettings() {
     }
   };
 
+  // Filter models based on search query
+  const filteredModels = allModels.filter(model => 
+    model.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    model.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-8 w-full">
       <div>
-        <h3 className="text-lg font-medium">Configurações de Modelos</h3>
+        <h3 className="text-xl font-medium mb-2">Configurações de Modelos</h3>
         <p className="text-sm text-muted-foreground">
           Configure sua chave API e escolha quais modelos estarão disponíveis
         </p>
@@ -192,9 +198,9 @@ export default function ModelsSettings() {
       <Separator />
 
       <div className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="api-key">API Key OpenRouter</Label>
-          <div className="flex gap-2">
+        <div className="space-y-4">
+          <Label htmlFor="api-key" className="text-base">API Key OpenRouter</Label>
+          <div className="flex gap-3">
             <Input
               id="api-key"
               type="password"
@@ -208,8 +214,14 @@ export default function ModelsSettings() {
               onClick={handleFetchModels}
               disabled={isFetchingModels || !apiKey.trim()}
               variant="secondary"
+              className="whitespace-nowrap"
             >
-              {isFetchingModels ? <Loader2 className="h-4 w-4 animate-spin" /> : "Buscar Modelos"}
+              {isFetchingModels ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" /> 
+                  Buscando...
+                </>
+              ) : "Buscar Modelos"}
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
@@ -226,16 +238,25 @@ export default function ModelsSettings() {
         </div>
         
         {allModels.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">Modelos Disponíveis</CardTitle>
+          <Card className="border-border/60">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-medium">Modelos Disponíveis</CardTitle>
+              <div className="mt-2 relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input 
+                  placeholder="Pesquisar modelos..." 
+                  className="pl-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">Selecione quais modelos devem estar disponíveis:</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {allModels.map((model) => (
-                    <div key={model.id} className="flex items-center space-x-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-2">
+                  {filteredModels.map((model) => (
+                    <div key={model.id} className="flex items-center space-x-2 p-2 rounded-md hover:bg-accent/50">
                       <Checkbox 
                         id={`model-${model.id}`} 
                         checked={enabledModels.includes(model.id)}
@@ -243,12 +264,17 @@ export default function ModelsSettings() {
                       />
                       <Label 
                         htmlFor={`model-${model.id}`}
-                        className="text-sm cursor-pointer"
+                        className="text-sm cursor-pointer flex-1"
                       >
                         {model.name}
                       </Label>
                     </div>
                   ))}
+                  {filteredModels.length === 0 && (
+                    <div className="col-span-2 text-center py-4 text-muted-foreground">
+                      Nenhum modelo encontrado para "{searchQuery}"
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -257,9 +283,15 @@ export default function ModelsSettings() {
         
         <Button
           onClick={handleSave}
-          disabled={isLoading || !apiKey.trim() || enabledModels.length === 0}
+          disabled={isLoading || !apiKey.trim()}
+          className="w-full sm:w-auto"
         >
-          {isLoading ? "Salvando..." : "Salvar Configurações"}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Salvando...
+            </>
+          ) : "Salvar Configurações"}
         </Button>
       </div>
     </div>
