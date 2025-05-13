@@ -289,9 +289,9 @@ export default function GroupsSettings() {
       </div>
       <Separator />
       
-      <div className="grid grid-cols-3 gap-6 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-full">
         {/* Groups List */}
-        <div className="col-span-1 border rounded-md p-4 h-[calc(100vh-300px)] overflow-auto">
+        <div className="border rounded-md p-4 h-[500px] overflow-auto">
           <div className="flex justify-between items-center mb-4">
             <h4 className="font-medium">Grupos</h4>
             <Button 
@@ -355,7 +355,7 @@ export default function GroupsSettings() {
         </div>
         
         {/* Group Details */}
-        <div className="col-span-2 border rounded-md p-4 h-[calc(100vh-300px)] overflow-auto">
+        <div className="md:col-span-2 border rounded-md p-4 h-[500px] overflow-auto">
           {selectedGroup ? (
             <div className="space-y-4">
               <div className="flex justify-between items-center">
@@ -406,7 +406,7 @@ export default function GroupsSettings() {
               {/* Permissions */}
               <div className="space-y-2">
                 <h5 className="font-medium">Permissões</h5>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {availablePermissions.map(permission => (
                     <div key={permission.id} className="flex items-center space-x-2">
                       <Checkbox 
@@ -428,7 +428,7 @@ export default function GroupsSettings() {
               {/* Available Models */}
               <div className="space-y-2">
                 <h5 className="font-medium">Modelos Autorizados</h5>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {availableModels.map(model => (
                     <div key={model.id} className="flex items-center space-x-2">
                       <Checkbox 
@@ -451,7 +451,8 @@ export default function GroupsSettings() {
               <div className="space-y-2">
                 <h5 className="font-medium">Usuários do Grupo</h5>
                 {groupUsers.length > 0 ? (
-                  <Table>
+                  <div className="overflow-x-auto">
+                    <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>ID do Usuário</TableHead>
@@ -475,7 +476,8 @@ export default function GroupsSettings() {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
+                    </Table>
+                  </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">Nenhum usuário no grupo</p>
                 )}

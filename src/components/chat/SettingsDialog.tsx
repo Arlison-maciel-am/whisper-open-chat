@@ -18,9 +18,9 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl p-0 flex h-[80vh] overflow-hidden">
+      <DialogContent className="max-w-6xl p-0 flex flex-col md:flex-row h-[80vh] overflow-hidden">
         {/* Sidebar */}
-        <div className="w-64 border-r h-full flex flex-col">
+        <div className="w-full md:w-64 border-r h-auto md:h-full flex flex-col">
           <div className="p-6 border-b">
             <h2 className="text-lg font-semibold">Configurações</h2>
             <p className="text-sm text-muted-foreground mt-1">Gerencie as configurações do sistema</p>
@@ -32,7 +32,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
             orientation="vertical" 
             className="h-full flex flex-col"
           >
-            <div className="flex-1 overflow-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4">
               <TabsList className="flex flex-col w-full gap-1 h-auto bg-transparent">
                 <TabsTrigger 
                   value="company"
@@ -79,7 +79,7 @@ export default function SettingsDialog({ open, onOpenChange }: SettingsDialogPro
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto h-full p-6">
+        <div className="flex-1 overflow-y-auto h-full p-4 md:p-6">
           {activeTab === "company" && <CompanySettings />}
           {activeTab === "models" && <ModelsSettings />}
           {activeTab === "groups" && <GroupsSettings />}
