@@ -67,6 +67,7 @@ export const streamCompletion = async (
     });
 
     console.log("Sending to OpenRouter with processed content including attachments");
+    console.log("First 500 chars of processed content:", processedMessages[processedMessages.length - 1].content.substring(0, 500));
 
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: "POST",

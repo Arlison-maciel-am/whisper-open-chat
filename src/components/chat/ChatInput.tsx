@@ -40,11 +40,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
         });
       }
       
-      // For PDF files, we can only indicate that it's a PDF (real extraction would require a library)
+      // For PDF files, provide a better placeholder that clearly indicates it's a PDF file
       if (fileType.includes('application/pdf')) {
         return new Promise((resolve) => {
-          reader.onload = (event) => {
-            const content = `PDF file content from: ${file.name}`;
+          reader.onload = () => {
+            // Improved PDF placeholder with more meaningful content
+            const content = `[PDF file: ${file.name}]\nPDF file content from: ${file.name}`;
             resolve(content);
           };
           reader.readAsArrayBuffer(file);
@@ -55,8 +56,19 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
       if (fileType.includes('application/msword') || 
           fileType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
         return new Promise((resolve) => {
-          reader.onload = (event) => {
-            const content = `Document file content from: ${file.name}`;
+          reader.onload = () => {
+            const content = `[Document file: ${file.name}]\nDocument file content from: ${file.name}`;
+            resolve(content);
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+      
+      // For image files, provide a description
+      if (fileType.startsWith('image/')) {
+        return new Promise((resolve) => {
+          reader.onload = () => {
+            const content = `[Image file: ${file.name}]\nThis is an image file of type ${file.type}.`;
             resolve(content);
           };
           reader.readAsArrayBuffer(file);
@@ -65,9 +77,9 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
       
       // For other file types, we need to read as ArrayBuffer and process
       return new Promise((resolve) => {
-        reader.onload = (event) => {
+        reader.onload = () => {
           // For now, just return the file type as we'll process through API
-          resolve(`[File content from ${file.name} - ${file.type}]`);
+          resolve(`[File: ${file.name}]\nFile of type: ${file.type}, size: ${(file.size / 1024).toFixed(2)} KB`);
         };
         reader.readAsArrayBuffer(file);
       });
