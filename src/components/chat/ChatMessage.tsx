@@ -1,15 +1,10 @@
+
 import React from 'react';
 import { Message } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-
-// Function to format the message content
-const formatMessage = (content: string) => {
-  // Replace new lines with <br /> tags for HTML rendering
-  return content.replace(/\n/g, '<br />');
-};
 
 const ChatMessage = ({ message, modelName }: { message: Message; modelName: string }) => {
   
@@ -71,12 +66,9 @@ const ChatMessage = ({ message, modelName }: { message: Message; modelName: stri
             )}
             
             <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-headings:font-semibold prose-p:text-foreground/90 prose-p:leading-relaxed prose-code:text-primary-foreground/90 prose-code:bg-primary/10 prose-code:rounded prose-strong:text-foreground prose-strong:font-semibold prose-pre:bg-muted prose-pre:text-muted-foreground">
-              <div 
-                className="markdown"
-                dangerouslySetInnerHTML={{ 
-                  __html: formatMessage(message.content)
-                }}
-              />
+              <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+                {message.content}
+              </ReactMarkdown>
             </div>
           </div>
         </div>

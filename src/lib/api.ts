@@ -1,4 +1,3 @@
-
 import { Message, Model } from "../types/chat";
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -53,7 +52,9 @@ export const streamCompletion = async (
           
           // Add each file's content with its name as a header
           attachmentsWithContent.forEach(attachment => {
-            content += `[${attachment.name}]\n${attachment.content}\n\n`;
+            if (attachment.content) {
+              content += `[${attachment.name}]\n${attachment.content}\n\n`;
+            }
           });
         }
       }

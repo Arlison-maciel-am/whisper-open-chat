@@ -13,6 +13,8 @@ export interface Attachment {
   url?: string;
   type: string;
   size: number;
+  content?: string;
+  file?: File;
 }
 
 export interface Chat {
