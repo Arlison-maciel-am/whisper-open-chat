@@ -1044,7 +1044,11 @@ const ChatComponent: React.FC = () => {
               ) : (
                 <div className="pb-20">
                   {chat.messages.map((message) => (
-                    <ChatMessage key={message.id} message={message} />
+                    <ChatMessage 
+                      key={message.id} 
+                      message={message} 
+                      modelName={chat.model} 
+                    />
                   ))}
                   
                   {/* Show streaming message */}
