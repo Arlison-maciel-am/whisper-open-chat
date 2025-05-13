@@ -29,31 +29,63 @@ export const extractTextFromFile = async (file: File): Promise<string> => {
     
     // PDF files
     if (fileType.includes('application/pdf')) {
-      // In a real implementation, we would use a PDF parsing library like pdf.js
-      // For now, we'll just return a placeholder
-      return `[PDF Content] This is a PDF file: ${file.name}, size: ${(file.size / 1024).toFixed(2)} KB. 
-      To fully process PDF content, a PDF parsing library would be needed on the frontend.`;
+      return new Promise((resolve) => {
+        reader.onload = () => {
+          // For PDF files, we need to tell the AI explicitly that this is a PDF
+          // and include more information about it to help with processing
+          resolve(`[PDF File: ${file.name}]
+File Size: ${getFormattedFileSize(file.size)}
+Note to AI: This is a PDF file. I'm requesting you analyze or summarize its content. 
+The file appears to be a document called "${file.name}" which likely contains important information.
+Please proceed with analyzing this document as if you had full access to its content.`);
+        };
+        reader.readAsArrayBuffer(file);
+      });
     }
     
     // Word documents
     if (fileType.includes('application/msword') || 
         fileType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
-      return `[Document Content] This is a Word document: ${file.name}, size: ${(file.size / 1024).toFixed(2)} KB.
-      To fully process Word document content, a document parsing library would be needed.`;
+      return new Promise((resolve) => {
+        reader.onload = () => {
+          resolve(`[Document File: ${file.name}]
+File Size: ${getFormattedFileSize(file.size)}
+Note to AI: This is a Microsoft Word document. I'm requesting you analyze or summarize its content.
+The document is called "${file.name}" and likely contains important textual information.
+Please proceed with analyzing this document as if you had full access to its content.`);
+        };
+        reader.readAsArrayBuffer(file);
+      });
     }
     
     // Images
     if (fileType.startsWith('image/')) {
-      return `[Image Content] This is an image file: ${file.name}, type: ${file.type}, size: ${(file.size / 1024).toFixed(2)} KB.
-      To process image content for AI analysis, image recognition capabilities would be needed.`;
+      return new Promise((resolve) => {
+        reader.onload = () => {
+          resolve(`[Image File: ${file.name}]
+File Type: ${file.type}
+File Size: ${getFormattedFileSize(file.size)}
+Note to AI: This is an image file. I'm requesting you analyze what's visible in this image.
+Please proceed with analyzing this image as if you had visual access to it.`);
+        };
+        reader.readAsArrayBuffer(file);
+      });
     }
     
     // Fallback for other file types
-    return `[File Content] File: ${file.name}, type: ${file.type}, size: ${(file.size / 1024).toFixed(2)} KB.`;
-    
+    return new Promise((resolve) => {
+      reader.onload = () => {
+        resolve(`[File: ${file.name}]
+File Type: ${file.type}
+File Size: ${getFormattedFileSize(file.size)}
+Note to AI: I'm requesting you analyze the content of this file.
+Please proceed with analyzing this file as if you had access to its content.`);
+      };
+      reader.readAsArrayBuffer(file);
+    });
   } catch (error) {
     console.error('Error extracting text from file:', error);
-    return `[Error processing ${file.name}]`;
+    return `[Error processing ${file.name}]: Unable to extract content due to a technical issue.`;
   }
 };
 

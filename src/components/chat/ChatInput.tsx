@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, ChangeEvent, KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,6 +5,7 @@ import { Send, Paperclip, X, Loader2 } from 'lucide-react';
 import { Attachment } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { extractTextFromFile, isSupportedFileType, getFormattedFileSize } from '@/lib/fileProcessing';
 
 interface ChatInputProps {
   onSendMessage: (message: string, attachments: Attachment[]) => void;
@@ -18,76 +18,6 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
   const [processingFiles, setProcessingFiles] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  // Function to extract text from different file types
-  const extractTextFromFile = async (file: File): Promise<string> => {
-    try {
-      // Handle different file types
-      const fileType = file.type.toLowerCase();
-      const reader = new FileReader();
-      
-      // Handle text files directly
-      if (fileType.includes('text/') || 
-          fileType.includes('application/json') || 
-          fileType.includes('application/csv') ||
-          fileType.includes('text/csv')) {
-        return new Promise((resolve, reject) => {
-          reader.onload = (event) => {
-            resolve(event.target?.result as string);
-          };
-          reader.onerror = reject;
-          reader.readAsText(file);
-        });
-      }
-      
-      // For PDF files, provide a better placeholder that clearly indicates it's a PDF file
-      if (fileType.includes('application/pdf')) {
-        return new Promise((resolve) => {
-          reader.onload = () => {
-            // Improved PDF placeholder with more meaningful content
-            const content = `[PDF file: ${file.name}]\nPDF file content from: ${file.name}`;
-            resolve(content);
-          };
-          reader.readAsArrayBuffer(file);
-        });
-      }
-      
-      // For document files (Word, etc.)
-      if (fileType.includes('application/msword') || 
-          fileType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
-        return new Promise((resolve) => {
-          reader.onload = () => {
-            const content = `[Document file: ${file.name}]\nDocument file content from: ${file.name}`;
-            resolve(content);
-          };
-          reader.readAsArrayBuffer(file);
-        });
-      }
-      
-      // For image files, provide a description
-      if (fileType.startsWith('image/')) {
-        return new Promise((resolve) => {
-          reader.onload = () => {
-            const content = `[Image file: ${file.name}]\nThis is an image file of type ${file.type}.`;
-            resolve(content);
-          };
-          reader.readAsArrayBuffer(file);
-        });
-      }
-      
-      // For other file types, we need to read as ArrayBuffer and process
-      return new Promise((resolve) => {
-        reader.onload = () => {
-          // For now, just return the file type as we'll process through API
-          resolve(`[File: ${file.name}]\nFile of type: ${file.type}, size: ${(file.size / 1024).toFixed(2)} KB`);
-        };
-        reader.readAsArrayBuffer(file);
-      });
-    } catch (error) {
-      console.error('Error extracting text from file:', error);
-      return `[Error processing ${file.name}]`;
-    }
-  };
 
   const handleSendMessage = async () => {
     if (message.trim() || attachments.length > 0) {
@@ -115,15 +45,23 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
 
   const processFileContent = async (file: File): Promise<Attachment> => {
     console.log(`Processing file: ${file.name}, type: ${file.type}`);
+    
+    // Check if the file type is supported
+    if (!isSupportedFileType(file)) {
+      toast.error(`Unsupported file type: ${file.type}`);
+      throw new Error(`Unsupported file type: ${file.type}`);
+    }
+    
     // Extract content for supported types
     let content = '';
     
     try {
       content = await extractTextFromFile(file);
-      console.log(`Extracted content from ${file.name} (first 50 chars): ${content.substring(0, 50)}...`);
+      console.log(`Extracted content from ${file.name} (first 100 chars): ${content.substring(0, 100)}...`);
     } catch (error) {
       console.error('Error processing file:', error);
-      content = '[Error processing file content]';
+      content = `[Error processing file: ${file.name}]`;
+      toast.error(`Error processing file: ${file.name}`);
     }
     
     // Create a URL for preview if it's an image
