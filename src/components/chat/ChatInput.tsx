@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, ChangeEvent, KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -18,6 +19,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // Function to extract text from different file types
   const extractTextFromFile = async (file: File): Promise<string> => {
     try {
       // Handle different file types
@@ -38,11 +40,34 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
         });
       }
       
+      // For PDF files, we can only indicate that it's a PDF (real extraction would require a library)
+      if (fileType.includes('application/pdf')) {
+        return new Promise((resolve) => {
+          reader.onload = (event) => {
+            const content = `PDF file content from: ${file.name}`;
+            resolve(content);
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+      
+      // For document files (Word, etc.)
+      if (fileType.includes('application/msword') || 
+          fileType.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+        return new Promise((resolve) => {
+          reader.onload = (event) => {
+            const content = `Document file content from: ${file.name}`;
+            resolve(content);
+          };
+          reader.readAsArrayBuffer(file);
+        });
+      }
+      
       // For other file types, we need to read as ArrayBuffer and process
       return new Promise((resolve) => {
         reader.onload = (event) => {
           // For now, just return the file type as we'll process through API
-          resolve(`[${file.name} - ${file.type}]`);
+          resolve(`[File content from ${file.name} - ${file.type}]`);
         };
         reader.readAsArrayBuffer(file);
       });
@@ -77,20 +102,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
   };
 
   const processFileContent = async (file: File): Promise<Attachment> => {
+    console.log(`Processing file: ${file.name}, type: ${file.type}`);
     // Extract content for supported types
     let content = '';
     
     try {
-      // For text based files, extract content directly
-      if (file.type.includes('text/') || 
-          file.type.includes('application/json') || 
-          file.type.includes('application/csv') ||
-          file.type.includes('text/csv')) {
-        content = await extractTextFromFile(file);
-      } else {
-        // For now, just note the file type - real extraction will be done via API
-        content = `[File content will be processed: ${file.name}]`;
-      }
+      content = await extractTextFromFile(file);
+      console.log(`Extracted content from ${file.name} (first 50 chars): ${content.substring(0, 50)}...`);
     } catch (error) {
       console.error('Error processing file:', error);
       content = '[Error processing file content]';

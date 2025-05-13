@@ -1,3 +1,4 @@
+
 import { Message, Model } from "../types/chat";
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
@@ -64,6 +65,8 @@ export const streamCompletion = async (
         content
       };
     });
+
+    console.log("Sending to OpenRouter with processed content including attachments");
 
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: "POST",

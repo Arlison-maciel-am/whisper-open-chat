@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { Chat, Message, Attachment } from '@/types/chat';
 import { User } from '@supabase/supabase-js';
@@ -121,7 +122,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
     console.log('Starting handleSendMessage with content:', content.substring(0, 30) + '...');
     console.log('Attachments:', attachments.length);
 
-    // Add user message to UI
+    // Add user message to UI with attachments that include content
     const userMessage: Message = {
       id: uuidv4(),
       role: 'user',
@@ -131,6 +132,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
     };
 
     // Save user message to database - critical to get the ID
+    // NOTE: We only save the user's original message to the database, not the attachment content
     let userMessageDbId: string;
     try {
       console.log('Saving user message to database');
@@ -141,7 +143,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
         .insert({
           chat_id: chat.id,
           role: 'user',
-          content,
+          content, // Only saving the original user message, not the attachment content
           has_attachments: attachments.length > 0,
           timestamp: timestamp
         })
@@ -156,7 +158,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
       console.log('User message saved with ID:', msgData.id);
       userMessageDbId = msgData.id;
       
-      // If there are attachments, save them
+      // If there are attachments, save their metadata (not content) to the database
       if (attachments.length > 0) {
         for (const attachment of attachments) {
           const { error: attachError } = await supabase
@@ -170,7 +172,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
             });
             
           if (attachError) {
-            console.error('Error saving attachment:', attachError);
+            console.error('Error saving attachment metadata:', attachError);
           }
         }
       }
@@ -202,15 +204,15 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
     setCurrentMessage('');
     
     try {
-      // Create a copy of messages that includes the user's new message
+      // Create a copy of messages that includes the user's new message with attachments
       const messagesForApi = [
         ...chat.messages.map(msg => ({ ...msg })),
-        { ...userMessage }
+        { ...userMessage } // This includes the attachments with their content
       ];
       
       let fullResponse = ''; // Track the full response for saving
       
-      // Stream the response
+      // Stream the response - the API call will include the attachment content
       await streamCompletion(
         messagesForApi,
         chat.model,
@@ -399,6 +401,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
           {chat && (
             <ChatInput 
               onSendMessage={handleSendMessage} 
+              disabled={isGenerating}
             />
           )}
         </div>
