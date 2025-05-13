@@ -73,6 +73,7 @@ export type Database = {
       }
       available_models: {
         Row: {
+          company_id: string | null
           created_at: string | null
           enabled: boolean | null
           id: string
@@ -82,6 +83,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          company_id?: string | null
           created_at?: string | null
           enabled?: boolean | null
           id?: string
@@ -91,6 +93,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          company_id?: string | null
           created_at?: string | null
           enabled?: boolean | null
           id?: string
@@ -99,7 +102,15 @@ export type Database = {
           name?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "available_models_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chats: {
         Row: {

@@ -119,6 +119,7 @@ const ChatLayout: React.FC<ChatLayoutProps> = ({
     }
 
     console.log('Starting handleSendMessage with content:', content.substring(0, 30) + '...');
+    console.log('Attachments:', attachments.length);
 
     // Add user message to UI
     const userMessage: Message = {

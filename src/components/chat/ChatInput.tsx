@@ -2,9 +2,10 @@
 import React, { useState, useRef, ChangeEvent, KeyboardEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Paperclip, X } from 'lucide-react';
+import { Send, Paperclip, X, Loader2 } from 'lucide-react';
 import { Attachment } from '@/types/chat';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 interface ChatInputProps {
   onSendMessage: (message: string, attachments: Attachment[]) => void;
@@ -14,12 +15,51 @@ interface ChatInputProps {
 const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }) => {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [processingFiles, setProcessingFiles] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSendMessage = () => {
+  const extractTextFromFile = async (file: File): Promise<string> => {
+    try {
+      // Handle different file types
+      const fileType = file.type.toLowerCase();
+      const reader = new FileReader();
+      
+      // Handle text files directly
+      if (fileType.includes('text/') || 
+          fileType.includes('application/json') || 
+          fileType.includes('application/csv') ||
+          fileType.includes('text/csv')) {
+        return new Promise((resolve, reject) => {
+          reader.onload = (event) => {
+            resolve(event.target?.result as string);
+          };
+          reader.onerror = reject;
+          reader.readAsText(file);
+        });
+      }
+      
+      // For other file types, we need to read as ArrayBuffer and process
+      return new Promise((resolve) => {
+        reader.onload = (event) => {
+          // For now, just return the file type as we'll process through API
+          resolve(`[${file.name} - ${file.type}]`);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    } catch (error) {
+      console.error('Error extracting text from file:', error);
+      return `[Error processing ${file.name}]`;
+    }
+  };
+
+  const handleSendMessage = async () => {
     if (message.trim() || attachments.length > 0) {
-      onSendMessage(message, attachments);
+      // If there are attachments and no message, add a default message about the attachments
+      const messageToSend = message.trim() || 
+        `I'm sending ${attachments.length} file(s). Please analyze the content${attachments.length > 1 ? 's' : ''}.`;
+      
+      onSendMessage(messageToSend, attachments);
       setMessage('');
       setAttachments([]);
       
@@ -37,28 +77,77 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
     }
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const processFileContent = async (file: File): Promise<Attachment> => {
+    // Extract content for supported types
+    let content = '';
+    
+    try {
+      // For text based files, extract content directly
+      if (file.type.includes('text/') || 
+          file.type.includes('application/json') || 
+          file.type.includes('application/csv') ||
+          file.type.includes('text/csv')) {
+        content = await extractTextFromFile(file);
+      } else {
+        // For now, just note the file type - real extraction will be done via API
+        content = `[File content will be processed: ${file.name}]`;
+      }
+    } catch (error) {
+      console.error('Error processing file:', error);
+      content = '[Error processing file content]';
+    }
+    
+    // Create a URL for preview if it's an image
+    let url = null;
+    if (file.type.startsWith('image/')) {
+      url = URL.createObjectURL(file);
+    }
+    
+    return {
+      id: `attachment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      content,
+      file, // Store the original file for further processing
+      url
+    };
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     
     if (files && files.length > 0) {
-      const newAttachments = Array.from(files).map(file => ({
-        id: `attachment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        type: file.type,
-        size: file.size
-      }));
-      
-      setAttachments([...attachments, ...newAttachments]);
-      
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      setProcessingFiles(true);
+      try {
+        const newAttachmentsPromises = Array.from(files).map(file => processFileContent(file));
+        const newAttachments = await Promise.all(newAttachmentsPromises);
+        
+        setAttachments([...attachments, ...newAttachments]);
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } catch (error) {
+        console.error('Error processing attachments:', error);
+        toast.error('Failed to process some attachments');
+      } finally {
+        setProcessingFiles(false);
       }
     }
   };
 
   const removeAttachment = (id: string) => {
-    setAttachments(attachments.filter(attachment => attachment.id !== id));
+    setAttachments(attachments.filter(attachment => {
+      if (attachment.id !== id) return true;
+      
+      // Release object URL if it exists to prevent memory leaks
+      if (attachment.url && attachment.url.startsWith('blob:')) {
+        URL.revokeObjectURL(attachment.url);
+      }
+      return false;
+    }));
   };
   
   // Auto-resize textarea
@@ -101,6 +190,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             className="min-h-[56px] max-h-[200px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-3 text-sm scrollbar-none z-10"
+            disabled={processingFiles || disabled}
           />
           
           <div className="flex-shrink-0 flex gap-1.5 p-2 z-10">
@@ -110,8 +200,13 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="h-9 w-9 rounded-full bg-accent/80 border-border/60 hover:bg-primary/20 z-10"
+              disabled={processingFiles || disabled}
             >
-              <Paperclip className="h-4 w-4" />
+              {processingFiles ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Paperclip className="h-4 w-4" />
+              )}
               <span className="sr-only">Attach file</span>
             </Button>
             
@@ -119,7 +214,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
               type="button"
               size="icon"
               onClick={handleSendMessage}
-              disabled={message.trim() === '' && attachments.length === 0}
+              disabled={(message.trim() === '' && attachments.length === 0) || processingFiles || disabled}
               className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 z-10"
             >
               <Send className="h-4 w-4" />
@@ -133,6 +228,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }
             onChange={handleFileChange}
             className="hidden"
             multiple
+            accept=".txt,.pdf,.doc,.docx,.csv,.xls,.xlsx,.json,.jpg,.jpeg,.png"
+            disabled={processingFiles || disabled}
           />
         </div>
         

@@ -39,6 +39,31 @@ export const streamCompletion = async (
   onFinish: () => void
 ) => {
   try {
+    // Process messages to include file content from attachments
+    const processedMessages = messages.map(msg => {
+      let content = msg.content;
+      
+      // If the message has attachments with content, add their content to the message
+      if (msg.attachments && msg.attachments.length > 0) {
+        const attachmentsWithContent = msg.attachments.filter(att => att.content);
+        
+        if (attachmentsWithContent.length > 0) {
+          // Add a separator between the original message and files content
+          content += "\n\n--- ATTACHED FILES CONTENT ---\n\n";
+          
+          // Add each file's content with its name as a header
+          attachmentsWithContent.forEach(attachment => {
+            content += `[${attachment.name}]\n${attachment.content}\n\n`;
+          });
+        }
+      }
+      
+      return {
+        role: msg.role,
+        content
+      };
+    });
+
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
@@ -49,10 +74,7 @@ export const streamCompletion = async (
       },
       body: JSON.stringify({
         model: modelId,
-        messages: messages.map(msg => ({
-          role: msg.role,
-          content: msg.content
-        })),
+        messages: processedMessages,
         stream: true
       })
     });
